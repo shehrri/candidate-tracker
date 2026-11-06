@@ -1,0 +1,24 @@
+node_modules/
+dist/
+.runtime-cache/
+CandidateTracker/
+test-results/
+playwright-report/
+*.log
+
+app/
+CandidateTracker-offline.zip
+*.tsbuildinfo
+
+# Local machine files, test output, and credentials
+.DS_Store
+artifacts/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local exports and portable archives
+candidate-tracker-backup-*.json
+CandidateTracker-offline*.zip
