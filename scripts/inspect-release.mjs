@@ -28,6 +28,7 @@ assert(ready, "Packaged launcher failed");
 try {
   const root = await fetch("http://127.0.0.1:47831");
   assert(root.ok);
+  assert.equal(await root.text(), await fs.readFile(new URL("../CandidateTracker/app/index.html", import.meta.url), "utf8"), "Running server must serve the current portable build");
   assert(
     root.headers.get("content-security-policy").includes("connect-src 'self'"),
   );
@@ -83,6 +84,7 @@ try {
         platform: process.platform,
         arch: process.arch,
         packagedLauncher: true,
+        reusedExistingServer: log.includes("already running"),
         csp: true,
         postRejected: true,
         traversalRejected: true,
@@ -99,5 +101,9 @@ try {
     "Packaged Mac launcher, security headers, routes, and screenshots verified.",
   );
 } finally {
-  process.kill(-proc.pid, "SIGTERM");
+  try {
+    process.kill(-proc.pid, "SIGTERM");
+  } catch (error) {
+    if (error.code !== "ESRCH") throw error;
+  }
 }

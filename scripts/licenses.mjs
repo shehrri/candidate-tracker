@@ -20,5 +20,5 @@ for (const [folder, pkg] of Object.entries(lock.packages)) {
     }
   } catch {}
 }
-await fs.writeFile("THIRD-PARTY-NOTICES.txt", text);
+await fs.writeFile("THIRD-PARTY-NOTICES.txt", text.replace(/\r\n/g, "\n").replace(/[ \t]+$/gm, "").trimEnd() + "\n");
 console.log("Third-party license notices generated.");

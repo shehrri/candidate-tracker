@@ -82,6 +82,9 @@ for (const f of [
   "BACKUP-GUIDE.md",
   "THIRD-PARTY-NOTICES.txt",
   "TEST-REPORT.md",
+  "DEVELOPER-GUIDE.md",
+  "SECURITY.md",
+  "CONTRIBUTING.md",
 ])
   await fs.copyFile(f, path.join(out, f));
 await fs.cp("templates", path.join(out, "templates"), { recursive: true });
@@ -90,6 +93,7 @@ await fs.writeFile(
   JSON.stringify(
     {
       application: "1.0.0",
+      author: "Sheheryar Ahmad",
       runtime: version,
       built: new Date().toISOString(),
       origin: "http://127.0.0.1:47831",

@@ -18,7 +18,7 @@ response time or paid support commitment.
 
 ## Current scope
 
-This project is in its initial release cycle. Native Windows launch validation
-and dependency audit review remain documented release checks; see TEST-REPORT.md.
+This project is in its initial release cycle. Windows testing is owner-confirmed, and the dependency audit is clean as of
+November 5, 2026; see TEST-REPORT.md for scope and remaining platform checks.
 Users should keep protected backups, use a trusted browser profile and OS account,
 and avoid opening untrusted downloaded resumes without normal document safeguards.

@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
-import ExcelJS from "exceljs";
+import writeXlsxFile from "write-excel-file/universal";
+import { readSheet } from "read-excel-file/universal";
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
 });
@@ -126,11 +127,12 @@ test("CSV and XLSX mapped imports, duplicate previews, search and export", async
   await expect(page.locator("tbody tr")).toHaveCount(1);
   await expect(page.locator("tbody")).toContainText("Beta");
   await page.getByRole("button", { name: "Clear filters" }).click();
-  const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet("Candidates");
-  sheet.addRow(["firstName", "lastName", "email"]);
-  sheet.addRow(["Gamma", "Fixture", "gamma@example.invalid"]);
-  const bytes = await workbook.xlsx.writeBuffer();
+  const bytes = await (
+    await writeXlsxFile([
+      ["firstName", "lastName", "email"],
+      ["Gamma", "Fixture", "gamma@example.invalid"],
+    ]).toBlob()
+  ).arrayBuffer();
   await page.getByRole("button", { name: "Import", exact: true }).click();
   await page.locator('input[accept=".csv,.xlsx"]').setInputFiles({
     name: "candidates.xlsx",
@@ -145,9 +147,17 @@ test("CSV and XLSX mapped imports, duplicate previews, search and export", async
   const download = page.waitForEvent("download");
   await page.getByLabel("Export candidates").selectOption("xlsx");
   const file = await download;
-  const exported = new ExcelJS.Workbook();
-  await exported.xlsx.readFile((await file.path())!);
-  expect(exported.worksheets[0].rowCount).toBe(4);
+  const exported = await readSheet(
+    new Blob([await fs.readFile((await file.path())!)]),
+  );
+  expect(exported).toHaveLength(4);
+  expect(exported[0]).toContain("firstName");
+  expect(
+    exported
+      .slice(1)
+      .map((row) => row[1])
+      .sort(),
+  ).toEqual(["Alpha", "Beta", "Gamma"]);
 });
 test("atomic restore through UI, archive, delete and offline network boundary", async ({
   page,

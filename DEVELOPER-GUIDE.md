@@ -2,7 +2,7 @@
 
 ## Architecture
 
-React + TypeScript + Vite; Tailwind's local build integration and semantic CSS; Lucide icons; Recharts; Dexie IndexedDB; Papa Parse CSV; lazy-loaded ExcelJS XLSX and JSZip DOCX validation. No production external requests, fonts, service workers, or cloud APIs. React escapes text. Links accept http/https only; mailto is built with encoded fields. Uploaded documents are download-only. CSV/XLSX exports escape formula-like prefixes.
+React + TypeScript + Vite; Tailwind's local build integration and semantic CSS; Lucide icons; Recharts; Dexie IndexedDB; Papa Parse CSV; lazy-loaded read-excel-file/write-excel-file XLSX and JSZip DOCX validation. No production external requests, fonts, service workers, or cloud APIs. React escapes text. Links accept http/https only; mailto is built with encoded fields. Uploaded documents are download-only. CSV/XLSX exports escape formula-like prefixes.
 
 `src/model.ts`: validation, IDs, duplicate normalization, recursive-descent Boolean parser, zone conversion, ICS, metric formulas.
 `src/db.ts`: Dexie schema and migrations, atomic domain mutations, cascading delete, merge, attachments, backup and restore.
@@ -44,8 +44,8 @@ The server binds only to 127.0.0.1:47831, rejects foreign Host headers and mutat
 
 The app intentionally does not use file:// because IndexedDB origins and module loading vary across browsers. A fixed loopback HTTP origin provides consistent browser storage and supports localhost secure-context APIs without certificates. Browser eviction, private browsing, clearing site data, and profile changes remain limitations. Storage.persist is optional and not guaranteed. No encryption or local password-lock claims are made.
 
-macOS Gatekeeper, endpoint protection, or enterprise policies can block downloaded scripts/runtimes. Distribution is not code-signed or notarized by this project. Windows and Intel/ARM64 launch scripts and binary presence can be inspected on macOS, but native Windows launch must be manually verified on those systems before a broad production rollout.
+macOS Gatekeeper, endpoint protection, or enterprise policies can block downloaded scripts/runtimes. Distribution is not code-signed or notarized by this project. Windows and Intel/ARM64 launch scripts and binary presence can be inspected on macOS, and native Windows testing was reported completed by the owner (not independently repeated here).
 
 ## Dependencies
 
-See package-lock.json for pinned resolved dependencies. Build dependencies are not shipped to users. ExcelJS includes older Node-only archiving dependencies; current audit findings and any production impact are recorded in TEST-REPORT.md. Do not blindly downgrade or override incompatible transitive dependencies to hide advisories.
+See package-lock.json for pinned resolved dependencies. Build dependencies are not shipped to users. ExcelJS and its transitive UUID dependency were removed in favor of focused XLSX reader/writer libraries. Current audit results are recorded in TEST-REPORT.md. Do not blindly downgrade or override incompatible transitive dependencies to hide advisories.

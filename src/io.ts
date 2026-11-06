@@ -60,23 +60,23 @@ export async function readImport(
     return result.data;
   }
   if (/\.xlsx$/i.test(file.name)) {
-    const Excel = await import("exceljs");
-    const book = new Excel.Workbook();
-    await book.xlsx.load(await file.arrayBuffer());
-    const sheet = book.worksheets[0];
-    if (!sheet) throw Error("No worksheet found.");
-    const headers: string[] = [];
-    sheet.getRow(1).eachCell((c, i) => (headers[i] = c.text));
-    const rows: Record<string, string>[] = [];
-    sheet.eachRow((row, n) => {
-      if (n === 1) return;
-      const r: Record<string, string> = {};
-      headers.forEach((h, i) => {
-        if (h) r[h] = row.getCell(i).text;
-      });
-      rows.push(r);
-    });
-    return rows;
+    const { readSheet } = await import("read-excel-file/universal");
+    const data = await readSheet(await file.arrayBuffer());
+    const text = (value: unknown): string =>
+      value instanceof Date
+        ? value.toISOString().slice(0, 10)
+        : String(value ?? "");
+    const headers = (data[0] ?? []).map(text);
+    return data
+      .slice(1)
+      .filter((row) => row.some((value) => value !== null && value !== ""))
+      .map((row) =>
+        Object.fromEntries(
+          headers.flatMap((header, index) =>
+            header ? [[header, text(row[index])]] : [],
+          ),
+        ),
+      );
   }
   throw Error("Use CSV or XLSX.");
 }
@@ -96,18 +96,24 @@ export async function exportCandidates(rows: Row[], format: "csv" | "xlsx") {
       "text/csv;charset=utf-8",
     );
   else {
-    const Excel = await import("exceljs");
-    const book = new Excel.Workbook(),
-      sheet = book.addWorksheet("Candidates");
-    sheet.columns = columns.map((k) => ({ header: k, key: k, width: 22 }));
-    records.forEach((r) => sheet.addRow(r));
-    sheet.getRow(1).font = { bold: true };
-    const bytes = await book.xlsx.writeBuffer();
-    download(
-      "candidates.xlsx",
-      new Blob([bytes as BlobPart], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      }),
-    );
+    download("candidates.xlsx", await candidateWorkbook(rows));
   }
+}
+
+export async function candidateWorkbook(rows: Row[]): Promise<Blob> {
+  const { default: writeXlsxFile } = await import("write-excel-file/universal");
+  const columns = ["id", ...candidateColumns, "createdAt", "updatedAt"];
+  return writeXlsxFile(
+    [
+      columns.map((value) => ({
+        value,
+        type: String,
+        fontWeight: "bold" as const,
+      })),
+      ...rows.map((row) =>
+        columns.map((key) => ({ value: safeCell(row[key]), type: String })),
+      ),
+    ],
+    { sheet: "Candidates", columns: columns.map(() => ({ width: 22 })) },
+  ).toBlob();
 }
